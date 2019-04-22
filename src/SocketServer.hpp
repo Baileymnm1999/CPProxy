@@ -3,6 +3,7 @@
 
 // CPP libs
 #include <functional>
+#include <thread>
 
 // Local
 #include "Types.hpp"
@@ -12,15 +13,15 @@ class SocketServer
 {
 public:
   typedef std::function<void(Socket)> ConnectionListener;
-  SocketServer(int);
+  SocketServer(int = 8080);
   ~SocketServer();
-  bool start();
+  Thread start();
   void onConnect(Socket);
-  void setOnConnectListener(SocketServer::ConnectionListener const &);
+  void setOnConnectListener(ConnectionListener const &);
 
 private:
   Socket mainSocket;
-  SocketServer::ConnectionListener onConnectListener;
+  ConnectionListener onConnectListener;
 };
 
 #endif

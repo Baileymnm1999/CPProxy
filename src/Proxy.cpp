@@ -1,6 +1,8 @@
 #include <iostream>
+#include <string>
 
 #include "Proxy.hpp"
+#include "HttpHandler.hpp"
 #include "Socket.hpp"
 #include "Types.hpp"
 
@@ -13,15 +15,25 @@ Proxy::~Proxy()
 {
 }
 
-void Proxy::startInstance()
+void Proxy::startInstance(int proto)
 {
-    String req;
-    do
-    {
-        req += client.recvs();
-    } while (req.substr(req.size() - 5, 4) != "\r\n\r\n");
+    String req = client.recvs();
+    handleRequest(req, proto);
 
-    std::cout << "Request:\n"
-              << req << std::endl;
     client.kill();
+}
+
+void Proxy::handleRequest(String req, int proto)
+{
+    String newReq;
+    switch (proto)
+    {
+    case HTTP:
+        newReq = HttpHandler().parseRequest(req).getRequest();
+        std::cout << newReq << std::endl;
+        break;
+
+    default:
+        break;
+    }
 }

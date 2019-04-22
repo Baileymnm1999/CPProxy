@@ -7,6 +7,8 @@
 SocketServer::SocketServer(int port)
 {
     mainSocket = Socket();
+
+    // TODO: Create SocketServerInitException
     if (!mainSocket.initialize())
     {
         perror("Initialization");
@@ -23,17 +25,21 @@ SocketServer::~SocketServer()
 {
 }
 
-bool SocketServer::start()
+Thread SocketServer::start()
 {
     if (!mainSocket.listen())
     {
-        return false;
+        // TODO: Create exception
+        throw 1;
     }
-    while (1)
-    {
-        Socket newSocket = mainSocket.await();
-        onConnect(newSocket);
-    }
+    return Thread(
+        [&]() {
+            while (1)
+            {
+                Socket newSocket = mainSocket.await();
+                onConnect(newSocket);
+            }
+        });
 }
 
 void SocketServer::onConnect(Socket conn)
@@ -52,7 +58,7 @@ void SocketServer::onConnect(Socket conn)
     }
 }
 
-void SocketServer::setOnConnectListener(SocketServer::ConnectionListener const &listener)
+void SocketServer::setOnConnectListener(ConnectionListener const &listener)
 {
     onConnectListener = listener;
 }
