@@ -17,23 +17,57 @@ Proxy::~Proxy()
 
 void Proxy::startInstance(int proto)
 {
-    String req = client.recvs();
-    handleRequest(req, proto);
-
+    try
+    {
+        handleClient(proto);
+    }
+    catch (int i)
+    {
+        std::cout << "Invalid Request\n";
+    }
     client.kill();
 }
 
-void Proxy::handleRequest(String req, int proto)
+String Proxy::handleClient(int proto)
 {
-    String newReq;
     switch (proto)
     {
     case HTTP:
-        newReq = HttpHandler().parseRequest(req).getRequest();
-        std::cout << newReq << std::endl;
-        break;
-
-    default:
+    {
+        handleHttp();
         break;
     }
+    default:
+    {
+        break;
+    }
+    }
+}
+
+void Proxy::handleHttp()
+{
+    // HttpHandler h = HttpHandler();
+    // String newReq = h.parseRequest(client.recvs()).getRequest();
+    // std::cout << "Forwarding:\n"
+    //   << newReq;
+    // Socket s = forward(newReq, h.getHost(), h.getPort());
+    // String data;
+    // do
+    // {
+    //     data = s.recvs();
+    //     break;
+    //     client.send(data);
+    // } while (!data.empty());
+
+    // s.kill();
+}
+
+Socket Proxy::forward(String data, String host, int port)
+{
+    Socket s = Socket();
+    s.initialize();
+    s.connect(host, port);
+    s.send(data);
+
+    return s;
 }

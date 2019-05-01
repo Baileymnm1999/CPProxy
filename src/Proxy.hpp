@@ -10,8 +10,10 @@ class Proxy
 {
 private:
   Socket client;
-  void handleRequest(String, int);
+  String handleClient(int);
+  void handleHttp();
   int identifyRequest(String);
+  Socket forward(String, String, int);
 
 public:
   static const int HTTP = 0b00;

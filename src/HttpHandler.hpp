@@ -16,6 +16,8 @@ public:
   ~HttpHandler();
   HttpHandler parseRequest(String);
   String getRequest();
+  int getPort();
+  String getHost();
   // void sendRequest();
 };
 

@@ -2,8 +2,10 @@
 #include <string.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <netdb.h>
 #include <sys/socket.h>
 #include <stdlib.h>
+#include <arpa/inet.h>
 #include <netinet/in.h>
 
 // Local
@@ -57,6 +59,40 @@ bool Socket::listen(int queue)
     return true;
 }
 
+bool Socket::connect(String host, int port)
+{
+    memset(&hostAddress, '0', sizeof(hostAddress));
+
+    hostAddress.sin_family = AF_INET;
+    hostAddress.sin_port = htons(port);
+
+    // Convert IPv4 and IPv6 addresses from text to binary form
+    if (inet_pton(AF_INET, host.c_str(), &hostAddress.sin_addr) <= 0)
+    {
+        hostent *record = gethostbyname(host.c_str());
+        if (record == NULL)
+        {
+            printf("%s is unavailable\n", host.c_str());
+            return 0;
+        }
+        in_addr *address = (in_addr *)record->h_addr;
+        char *ip_address = inet_ntoa(*address);
+
+        if (inet_pton(AF_INET, ip_address, &hostAddress.sin_addr) <= 0)
+        {
+            printf("\nInvalid address/ Address not supported \n");
+            return 0;
+        }
+    }
+
+    if (::connect(socketFd, (struct sockaddr *)&hostAddress, sizeof(hostAddress)) < 0)
+    {
+        printf("\nConnection Failed \n");
+        return 0;
+    }
+    return 1;
+}
+
 Socket Socket::await()
 {
     int newSocket;
@@ -80,8 +116,14 @@ bool Socket::send(String data)
 
 String Socket::recvs()
 {
-    char buf[4096] = {0};
-    // memset(buf, 0, 4096);
-    ::recv(socketFd, buf, sizeof(buf), 0);
-    return String(buf);
+    size_t s = 1024 * 1024;
+    char *buf = (char *)malloc(s);
+    if (::recv(socketFd, buf, s, 0) < 0)
+    {
+        std::cout << "Disconect";
+        return "";
+    }
+    String ret = String(buf);
+    // free(buf);
+    return ret;
 }
